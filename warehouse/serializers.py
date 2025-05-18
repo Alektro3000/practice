@@ -35,8 +35,22 @@ class MovementSerializer(serializers.ModelSerializer ):
         read_only_fields = ['id']
         depth = 3
 
+class MovementEditSerializer(serializers.ModelSerializer ):
+    class Meta:
+        model = Movement
+        fields = ['id', 'operation_id', 'balance_after_operation']
+        read_only_fields = ['id']
+
         
-class OperationSerializer(serializers.ModelSerializer):    
+class OperationSerializer(serializers.ModelSerializer):        
+    class Meta:
+        model = Operation
+        fields = ['id', 'operation_type', 'product_id', 'quantity', 'operation_date', 'user_id', 'comments']
+        read_only_fields = ['id', 'operation_type', 'product_id', 'quantity', 'operation_date', 'user_id', 'comments']
+        depth = 2
+
+        
+class OperationEditSerializer(serializers.ModelSerializer):    
     def create(self, validated_data):
         # Automatically add username from request.user
         user =  self.context['request'].user.username
@@ -47,5 +61,3 @@ class OperationSerializer(serializers.ModelSerializer):
         model = Operation
         fields = ['id', 'operation_type', 'product_id', 'quantity', 'operation_date', 'user_id', 'comments']
         read_only_fields = ['id', 'user_id']
-        depth = 2
-

@@ -98,7 +98,7 @@ class MovementListView(APIView):
         return Response(serializer.data)
     
     def post(self, request):
-        serializer = MovementSerializer(data = request.data)
+        serializer = MovementEditSerializer(data = request.data)
         if serializer.is_valid():
             value = serializer.save()
             value.refresh_from_db()
@@ -112,7 +112,7 @@ class MovementView(APIView):
     
     
     def put(self, request, id):
-        serializer = MovementSerializer(Movement.objects.get(id=id), data = request.data, partial=True)
+        serializer = MovementEditSerializer(Movement.objects.get(id=id), data = request.data, partial=True)
         
         if serializer.is_valid():
             value = serializer.save()
@@ -121,7 +121,7 @@ class MovementView(APIView):
         return Response(serializer.errors, status=400)
 
     def delete(self, request, id):
-        Movement.objects.get(id = id).delete()
+        MovementEditSerializer.objects.get(id = id).delete()
         return Response(status=status.HTTP_204_NO_CONTENT) 
 
 
@@ -150,7 +150,7 @@ class OperationListView(APIView):
         return Response(serializer.data)
     
     def post(self, request):
-        serializer = OperationSerializer(data = request.data, context={'request': request})
+        serializer = OperationEditSerializer(data = request.data, context={'request': request})
         if serializer.is_valid():
             value = serializer.save()
             value.refresh_from_db()
@@ -164,7 +164,7 @@ class OperationView(APIView):
     
     
     def put(self, request, id):
-        serializer = OperationSerializer(Operation.objects.get(id=id), data = request.data, partial=True)
+        serializer = OperationEditSerializer(Operation.objects.get(id=id), data = request.data, partial=True)
         
         if serializer.is_valid():
             serializer.save()
