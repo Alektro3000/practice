@@ -1,3 +1,13 @@
 /__pycache__/
 **/__pycache__
 /media/
+/.venv
+/warehouse/__pycache__
+/summary/__pycache__
+/web_project/__pycache__
+summary/__pycache__/urls.cpython-312.pyc
+summary/__pycache__/views.cpython-312.pyc
+warehouse/__pycache__/models.cpython-312.pyc
+warehouse/__pycache__/serializers.cpython-312.pyc
+warehouse/__pycache__/urls.cpython-312.pyc
+warehouse/__pycache__/views.cpython-312.pyc

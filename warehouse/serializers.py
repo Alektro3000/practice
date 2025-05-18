@@ -7,6 +7,7 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = ['id', 'name', 'category_id', 'unit_of_measure_id', 'description', 'product_size', 'min_stock_level','created_at', 'updated_at']
         read_only_fields = ['id', 'created_at', 'updated_at']
+        depth = 1
         
 class ProductEditSerializer(serializers.ModelSerializer):
     class Meta:
@@ -34,6 +35,7 @@ class MovementSerializer(serializers.ModelSerializer ):
         model = Movement
         fields = ['id', 'product_id',  'operation_id', 'quantity_change', 'balance_after_operation','comments', 'operation_date']
         read_only_fields = ['id']
+        depth = 3
 
         
 class OperationSerializer(serializers.ModelSerializer):    
@@ -47,4 +49,5 @@ class OperationSerializer(serializers.ModelSerializer):
         model = Operation
         fields = ['id', 'operation_type', 'product_id', 'quantity', 'operation_date', 'user_id', 'comments']
         read_only_fields = ['id', 'user_id']
+        depth = 2
 
