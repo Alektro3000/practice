@@ -10,8 +10,6 @@ from warehouse.models import *
 
 
 class ProductListView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
     def get(self, request):
         queryset = Product.objects.all()
         category = request.query_params.get('category_id')  # /products/?category_id=category_id
@@ -43,7 +41,6 @@ class ProductListView(APIView):
     
     
 class ProductView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
     def get(self, request, id):
         return Response(ProductSerializer(Product.objects.get(id = id)).data)
     
@@ -63,39 +60,15 @@ class ProductView(APIView):
 
 
 class CategoryListView(APIView):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     def get(self, request):
         return Response(CategorySerializer(Category.objects.all(), many=True).data)
 
 class CategoryView(APIView):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     def get(self, request, id):
         return Response(ProductSerializer(Category.objects.get(id = id)))
     
-    def post(self, request):
-        serializer = CategorySerializer(data = request.data)
-        if serializer.is_valid():
-            value = serializer.save()
-            value.refresh_from_db()
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
-    
-    def put(self, request):
-        serializer = CategorySerializer(Category.objects.get(id=id), data = request.data, partial=True)
-
-        if serializer.is_valid():
-            value = serializer.save()
-            value.refresh_from_db()
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
-
-    def delete(self, request, id):
-        Category.objects.get(id = id).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-    
     
 class MovementListView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
         queryset = Movement.objects.all()
@@ -128,7 +101,6 @@ class MovementListView(APIView):
         return Response(serializer.errors, status=400)
     
 class MovementView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
     def get(self, request, id):
         return Response(MovementSerializer(Movement.objects.get(id = id)).data)
     
@@ -148,8 +120,6 @@ class MovementView(APIView):
 
 
 class OperationListView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
     def get(self, request):
         queryset = Operation.objects.all()
         min_date = request.query_params.get('min_date')  # /products/?min_date=min_date
@@ -181,7 +151,6 @@ class OperationListView(APIView):
         return Response(serializer.errors, status=400)
     
 class OperationView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
     def get(self, request, id):
         return Response(OperationSerializer(Operation.objects.get(id = id)).data)
     
