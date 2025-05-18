@@ -18,12 +18,14 @@ from rest_framework.response import Response
 from rest_framework import status
 
 class SummaryLoadView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
     def get(self, request, id):
         file_instance = SummaryFile.objects.get(id=id)
         return FileResponse(file_instance.file.open(), as_attachment=True, filename=file_instance.name)
     
     
 class SummaryListView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
     def get(self, request):
         return Response(SummaryFileSerializer(SummaryFile.objects.all(), many=True).data)
     
@@ -38,11 +40,13 @@ def getProductSummary():
     return header + data + footer
 
 class ProductSummaryCSVView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
     def post(self, request):
         createAndSaveFile(getProductSummary(), "Product", 'csv')
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class ProductSummaryPDFView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
     def post(self, request):
         createAndSaveFile(getProductSummary(), "Product", 'pdf')
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -58,11 +62,13 @@ def getRunOutSummary():
 
 
 class RunOutSummaryCSVView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
     def post(self, request):
         createAndSaveFile(getRunOutSummary(), "RunOut", 'csv')
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class RunOutSummaryPDFView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
     def post(self, request):
         createAndSaveFile(getRunOutSummary(), "RunOut", 'pdf')
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -88,11 +94,13 @@ def getMovementSummary(request):
 
 
 class MovementSummaryCSVView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
     def post(self, request):
         createAndSaveFile(getMovementSummary(request), "Movement", 'csv')
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class MovementSummaryPDFView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
     def post(self, request):
         createAndSaveFile(getMovementSummary(request), "Movement", 'pdf')
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -123,11 +131,13 @@ def getProductMovementSummary(request):
         
 
 class MovementFullSummaryCSVView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
     def post(self, request):
         createAndSaveFile(getProductMovementSummary(request), "MovementFull", 'csv')
         return Response(status=status.HTTP_204_NO_CONTENT)
     
 class MovementFullSummaryPDFView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
     def post(self, request):
         createAndSaveFile(getProductMovementSummary(request), "MovementFull", 'pdf')
         return Response(status=status.HTTP_204_NO_CONTENT)
