@@ -41,6 +41,7 @@ class ProductListView(APIView):
         return Response(serializer.errors, status=400)
     
     
+    
 class ProductView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     def get(self, request, id):
@@ -192,3 +193,28 @@ class ExportCSVView(APIView):
                              product.category_id, product.product_size])
 
         return response
+    
+
+class ProductLastListView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    def get(self, request):
+        queryset = Product.objects.all().order_by('-updated_at')[:5]
+
+        serializer = ProductSerializer(queryset, many=True)
+        return Response(serializer.data)
+    
+class MovementLastListView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    def get(self, request):
+        queryset = Movement.objects.all().select_related('operation_id').order_by('-operation_id__operation_date')[:5]
+
+        serializer = MovementSerializer(queryset, many=True)
+        return Response(serializer.data)
+    
+class OperationLastListView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    def get(self, request):
+        queryset = Operation.objects.all().order_by('-operation_date')[:5]
+
+        serializer = OperationSerializer(queryset, many=True)
+        return Response(serializer.data)

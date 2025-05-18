@@ -57,9 +57,7 @@ class Operation(models.Model):
 
 class Movement(models.Model):
     id = models.AutoField(primary_key=True)
-    product_id = models.ForeignKey(Product, on_delete=models.PROTECT,  db_column='product_id')
     operation_id = models.ForeignKey(Operation, on_delete=models.PROTECT,  db_column='operation_id')
-    quantity_change = models.IntegerField()
     balance_after_operation = models.IntegerField()
 
     class Meta:

@@ -29,11 +29,9 @@ class UnitOfMeasureSerializer(serializers.ModelSerializer):
 
         
 class MovementSerializer(serializers.ModelSerializer ):
-    comments = serializers.CharField(source='operation_id.comments', read_only=True)
-    operation_date = serializers.DateTimeField(source='operation_id.operation_date', read_only=True)
     class Meta:
         model = Movement
-        fields = ['id', 'product_id',  'operation_id', 'quantity_change', 'balance_after_operation','comments', 'operation_date']
+        fields = ['id', 'operation_id', 'balance_after_operation']
         read_only_fields = ['id']
         depth = 3
 
