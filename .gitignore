@@ -11,3 +11,4 @@ warehouse/__pycache__/models.cpython-312.pyc
 warehouse/__pycache__/serializers.cpython-312.pyc
 warehouse/__pycache__/urls.cpython-312.pyc
 warehouse/__pycache__/views.cpython-312.pyc
+*.pyc
