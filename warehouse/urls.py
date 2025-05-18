@@ -3,6 +3,8 @@ import warehouse.views as views
 
 
 urlpatterns = [
+    path('categories/', views.CategoryListView.as_view(), name='categories'), 
+    path('categories/<int:id>/', views.CategoryView.as_view(), name='category'), 
     
     path('products/', views.ProductListView.as_view(), name='products'), 
     path('products/<int:id>/', views.ProductView.as_view(), name='product'), 
