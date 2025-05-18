@@ -4,111 +4,177 @@ import io
 from django.core.files.base import ContentFile
 from django.http import FileResponse
 
-from warehouse.models import Movement
-
 from summary.serializers import *
 from summary.models import *
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework import permissions, status
+
+import csv
+import time
+import io
+import os
+from django.core.files.base import ContentFile
+from django.http import FileResponse
+
+from summary.serializers import *
+from summary.models import *
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from rest_framework import status
 
+from reportlab.lib import colors
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from django.conf import settings
 
-class CreateProductSummaryCSVView(APIView):
-    def post(self, request):
-        output = io.StringIO()
-        writer = csv.writer(output)
-        writer.writerow(['Название товара', 'Категория', 'Остаток'])
-        total_quantity=0
-        for product in ProductSummary.objects.all():
-            writer.writerow([product.product_name, product.category, product.current_quantity])
-            total_quantity += product.current_quantity
-        writer.writerow(["", "", "Итого: "+str(total_quantity)])
+def CreatePDF(data):
+        pdfmetrics.registerFont(TTFont('TimesNewRoman', os.path.join(settings.BASE_DIR, 'summary', 'static',  'fonts',  'times.ttf')))
+        # Create PDF document
+        buffer = io.BytesIO()
+        document = SimpleDocTemplate(buffer, pagesize=letter)
+
+        # Create the table
+        table = Table(data)
+
+        # Add style to the table
+        style = TableStyle([
+            ('FONTNAME', (0, 0), (-1, -1), 'TimesNewRoman'),
+            ('FONTSIZE', (0,0), (-1,0), 16),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.lightblue),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ])
+
+        table.setStyle(style)
+        # Build the PDF
+        document.build([table])
+        buffer.seek(0)
+        return buffer.getvalue()
+
+def CreateCSV(data):
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    for row in data:
+        writer.writerow(row)
         
-        csv_content = output.getvalue()
-        output.close()
-        summary = SummaryFile(name = "Product" + str(time.time()) + ".csv", type = "Product", format = "csv")
-        summary.file.save( "Product" + str(time.time()) + ".csv", ContentFile(csv_content.encode('utf-8-sig')))
-        summary.save()
-
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    csv_content = output.getvalue()
+    output.close()
+    return csv_content.encode("utf-8-sig")
     
 
-class CreateProductRunOutSummaryCSVView(APIView):
-    def post(self, request):
-        output = io.StringIO()
-        writer = csv.writer(output)
-        writer.writerow(['Название товара', 'Категория', 'Остаток'])
-        for product in ProductRunOutSummary.objects.all():
-            writer.writerow([product.product_name, product.category, product.stock_difference])
-        
-        csv_content = output.getvalue()
-        output.close()
-        summary = SummaryFile(name = "RunOut" + str(time.time()) + ".csv", type = "RunOut", format = "csv")
-        summary.file.save( "RunOut" + str(time.time()) + ".csv", ContentFile(csv_content.encode('utf-8-sig')))
-        summary.save()
+def CreateFile(data, format: str):
+    if(format == "pdf"):
+    # Build the PDF
+        return CreatePDF(data)
+    elif(format == "csv"):
+     # Build the CSV
+        return CreateCSV(data)
+    
+def SaveFile(file, type: str, format: str):
+    summary = SummaryFile(name = type + str(time.time()) + "." + format, type = type, format = format)
+    summary.file.save(type + str(time.time()) + "." + format, ContentFile(file))
+    summary.save()
+
+
+
+class CreateProductSummaryView(APIView):
+    def post(self, request, format):
+        # Table data (list of lists)
+        header = [
+            ['Название товара', 'Категория', 'Остаток'],
+        ]
+        data = [ [product.product_name, product.category, product.current_quantity] for product in ProductSummary.objects.all()]
+        footer = ["", "", "Итого: "+str(sum(data[::,2:2]))]
+        file = CreateFile(header + data + footer, format)
+        SaveFile(file, "Product", format)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+class CreateRunOutSummaryView(APIView):
+    def post(self, request, format):
 
-class CreateMovementSummaryCSVView(APIView):
-    def post(self, request):
-        output = io.StringIO()
-        writer = csv.writer(output)
-        writer.writerow(['Тип операции', 'Дата'])
-        
+
+        # Table data (list of lists)
+        header = [
+            ['Название товара', 'Категория', 'Нехватка'],
+        ]
+        data = [ [product.product_name, product.category, product.stock_difference] \
+                for product in ProductRunOutSummary.objects.all()]
+
+        file = CreateFile(header + data, format)
+        SaveFile(file, "RunOut", format)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+class CreateMovementSummaryView(APIView):
+    def post(self, request, format):
+
+
+        # Table data (list of lists)
+        header = [
+            ['Тип операции', 'Дата'],
+        ]
         movements = MovementSummary.objects.all()
 
         min_date = request.query_params.get('min_date') 
         if min_date:
-            movements = movements.filter(min_date__gt=min_date)
+            movements = movements.filter(min_date__gte=min_date)
         
         max_date = request.query_params.get('max_date')
         if max_date:
-            movements = movements.filter(max_date__lt=max_date)
+            movements = movements.filter(max_date__lte=max_date)
 
-        for movement in movements:
-            writer.writerow([movement.operation_type, movement.operation_date])
-        
-        csv_content = output.getvalue()
-        output.close()
-        summary = SummaryFile(name = "Movement" + str(time.time()) + ".csv", type = "Movement", format = "csv")
-        summary.file.save( "Movement" + str(time.time()) + ".csv", ContentFile(csv_content.encode('utf-8-sig')))
-        summary.save()
+
+        data = [ [product.product_name, product.category, product.stock_difference] \
+                for product in movements]
+
+        file = CreateFile(header + data, format)
+        SaveFile(file, "Movement", format)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
-        
-class CreateProductMovementFullSummaryCSVView(APIView):
-    def post(self, request):
-        output = io.StringIO()
-        writer = csv.writer(output)
-        writer.writerow(['Тип операции', 'Изменение товара',  'Дата', 'Текущий остаток '])
-        
+
+class CreateMovementFullSummaryView(APIView):
+    def post(self, request, format):
+
+
+        # Table data (list of lists)
+        header = [
+            ['Тип операции', 'Изменение товара',  'Дата', 'Текущий остаток '],
+        ]
         movements = ProductMovementSummary.objects.all()
 
         min_date = request.query_params.get('min_date') 
         if min_date:
-            movements = movements.filter(min_date__gt=min_date)
+            movements = movements.filter(min_date__gte=min_date)
         
         max_date = request.query_params.get('max_date')
         if max_date:
-            movements = movements.filter(max_date__lt=max_date)
+            movements = movements.filter(max_date__lte=max_date)
 
         product = request.query_params.get('product')
         if product:
             movements = movements.filter(product_id=product)
 
-        for movement in movements:
-            writer.writerow([movement.operation_type, movement.quantity_change, movement.operation_date, movement.balance_after_operation ])
+
+        data = [ [product.product_name, product.category, product.stock_difference] \
+                for product in movements]
         
-        csv_content = output.getvalue()
-        output.close()
-        summary = SummaryFile(name = "ProductMovement" + str(time.time()) + ".csv", type = "ProductMovement", format = "csv")
-        summary.file.save( "ProductMovement" + str(time.time()) + ".csv", ContentFile(csv_content.encode('utf-8-sig')))
-        summary.save()
+
+        file = CreateFile(header + data, format)
+        SaveFile(file, "ProductMovement", format)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
     
 class SummaryLoadView(APIView):
     def get(self, request, id):

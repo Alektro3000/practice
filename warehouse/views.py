@@ -1,14 +1,10 @@
 import csv
-from django.http import JsonResponse
-from django.shortcuts import render
-import re
 from django.shortcuts import HttpResponse
-from django.utils.timezone import datetime
 
-from rest_framework import permissions, viewsets
+from rest_framework import permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+
 from warehouse.serializers import *
 from warehouse.models import *
 
@@ -105,11 +101,11 @@ class MovementListView(APIView):
         queryset = Movement.objects.all()
         min_date = request.query_params.get('min_date')  # /products/?min_date=min_date
         if min_date:
-            queryset = queryset.filter(min_date__gt=min_date)
+            queryset = queryset.filter(min_date__gte=min_date)
         
         max_date = request.query_params.get('max_date')  # /products/?max_date=max_date
         if max_date:
-            queryset = queryset.filter(max_date__lt=max_date)
+            queryset = queryset.filter(max_date__lte=max_date)
         
         type = request.query_params.get('type')  # /products/?type=type
         if type:
@@ -158,11 +154,11 @@ class OperationListView(APIView):
         queryset = Operation.objects.all()
         min_date = request.query_params.get('min_date')  # /products/?min_date=min_date
         if min_date:
-            queryset = queryset.filter(min_date__gt=min_date)
+            queryset = queryset.filter(min_date__gte=min_date)
         
         max_date = request.query_params.get('max_date')  # /products/?max_date=max_date
         if max_date:
-            queryset = queryset.filter(max_date__lt=max_date)
+            queryset = queryset.filter(max_date__lte=max_date)
         
         type = request.query_params.get('type')  # /products/?type=type
         if type:
