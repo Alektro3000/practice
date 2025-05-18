@@ -34,9 +34,11 @@ class Product(models.Model):
     created_at = models.DateTimeField(null=False, auto_now_add=True)
     updated_at = models.DateTimeField(null=False, auto_now_add=True)
 
+    current_quantity = models.IntegerField()
+
     class Meta:
         managed = False
-        db_table = '"warehouse"."product"'
+        db_table = '"warehouse"."product_quantity_view"'
 
 
 class Operation(models.Model):

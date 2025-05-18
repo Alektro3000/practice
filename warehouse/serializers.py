@@ -5,8 +5,8 @@ from rest_framework import serializers
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ['id', 'name', 'category_id', 'unit_of_measure_id', 'description', 'product_size', 'min_stock_level','created_at', 'updated_at']
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        fields = ['id', 'name', 'category_id', 'unit_of_measure_id', 'description', 'product_size', 'min_stock_level','created_at', 'updated_at' , 'current_quantity']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'current_quantity']
         depth = 1
         
 class ProductEditSerializer(serializers.ModelSerializer):
